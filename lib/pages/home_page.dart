@@ -3,6 +3,7 @@ import '../db/mongo_database.dart';
 import '../models/libro.dart';
 import 'form_page.dart';
 import 'detail_page.dart';
+import 'about_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,12 +15,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0; // Controla la pestaña activa
 
+  final GlobalKey<_EstadisticasTabState> _statsKey = GlobalKey();
+
   // Lista de títulos para el AppBar según la pestaña
   final List<String> _titles = [
     'Mi Colección Local',
     'Explorar Open Library',
     'Estadísticas',
-    'Acerca de'
+    'Acerca de la App',
   ];
 
   @override
@@ -36,8 +39,9 @@ class _HomePageState extends State<HomePage> {
         children: [
           _ColeccionLocalTab(onRefreshRequest: () => setState(() {})),
           const _ExplorarApiTab(),
-          const _EstadisticasTab(),
-          const _AcercaDeTab(),
+          _EstadisticasTab(key: _statsKey),
+          const AboutPage(),
+          
         ],
       ),
       // Menú de navegación inferior elegante (Material 3)
@@ -67,7 +71,7 @@ class _HomePageState extends State<HomePage> {
           NavigationDestination(
             icon: Icon(Icons.info_outline),
             selectedIcon: Icon(Icons.info),
-            label: 'Acerca de',
+            label: 'Acerca de la App',
           ),
         ],
       ),
@@ -296,7 +300,7 @@ class _ExplorarApiTabState extends State<_ExplorarApiTab> {
                 itemBuilder: (context, index) {
                   final libro = _resultados[index];
                   return Card(
-                    color: Colors.teal.withOpacity(0.05),
+                    color: const Color.fromARGB(255, 5, 7, 83).withOpacity(0.05),
                     child: ListTile(
                       leading: libro.imagen.isNotEmpty
                           ? Image.network(libro.imagen, width: 45, fit: BoxFit.cover,
@@ -323,38 +327,66 @@ class _ExplorarApiTabState extends State<_ExplorarApiTab> {
 // =========================================================================
 // 3. PESTAÑA: ESTADÍSTICAS (KPIs EN TIEMPO REAL DESDE MONGO)
 // =========================================================================
-class _EstadisticasTab extends StatelessWidget {
-  const _EstadisticasTab();
+class _EstadisticasTab extends StatefulWidget {
+  const _EstadisticasTab({super.key});
+
+  @override
+  State<_EstadisticasTab> createState() => _EstadisticasTabState();
+}
+
+class _EstadisticasTabState extends State<_EstadisticasTab> {
+  late Future<List<Libro>> _estadisticasFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _estadisticasFuture = MongoDatabase.getLibrosGuardados();
+  }
+
+  // Método para refrescar los datos manualmente
+  void _refrescarDatos() {
+    setState(() {
+      _estadisticasFuture = MongoDatabase.getLibrosGuardados();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Libro>>(
-      future: MongoDatabase.getLibrosGuardados(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final libros = snapshot.data ?? [];
-        final totalLibros = libros.length;
-        
-        // Calcular autores únicos
-        final autoresUnicos = libros.map((l) => l.autor).toSet().length;
+    // Usamos RefreshIndicator para que el usuario pueda deslizar hacia abajo y actualizar
+    return RefreshIndicator(
+      onRefresh: () async => _refrescarDatos(),
+      child: FutureBuilder<List<Libro>>(
+        future: _estadisticasFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            children: [
-              _kpiCard('Libros Guardados', '$totalLibros', Icons.menu_book, Colors.blue),
-              _kpiCard('Autores Distintos', '$autoresUnicos', Icons.person, Colors.orange),
-              _kpiCard('Sincronizados', '$totalLibros', Icons.cloud_done, Colors.green),
-              _kpiCard('Versión API', 'v1.0 (JSON)', Icons.api, Colors.purple),
-            ],
-          ),
-        );
-      },
+          final libros = snapshot.data ?? [];
+          final totalLibros = libros.length;
+          
+          // Calcular autores únicos
+          final autoresUnicos = libros.map((l) => l.autor).toSet().length;
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _kpiCard('Libros Guardados', '$totalLibros', Icons.menu_book, Colors.blue),
+                _kpiCard('Autores Distintos', '$autoresUnicos', Icons.person, Colors.orange),
+                _kpiCard('Sincronizados', '$totalLibros', Icons.cloud_done, Colors.green),
+                _kpiCard('Versión API', 'v1.0 (JSON)', Icons.api, Colors.purple),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -400,7 +432,7 @@ class _AcercaDeTab extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Gestor Inmortal de Libros',
+              'Gestor para tus Libros',
               style: TextStyle(
                 fontSize: 22, 
                 fontWeight: FontWeight.bold,
@@ -416,12 +448,12 @@ class _AcercaDeTab extends StatelessWidget {
             const ListTile(
               leading: Icon(Icons.code),
               title: Text('Desarrollador'),
-              subtitle: Text('Tu Nombre / Estudiante'),
+              subtitle: Text('Paulo Cisneros / Estudiante'),
             ),
             const ListTile(
               leading: Icon(Icons.storage),
               title: Text('Base de Datos'),
-              subtitle: Text('MongoDB Atlas Cluster0'),
+              subtitle: Text('MongoDB Atlas'),
             ),
           ],
         ),

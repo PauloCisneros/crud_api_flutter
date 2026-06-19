@@ -22,6 +22,7 @@ class _ApiExplorerPageState extends State<ApiExplorerPage> {
   
   int _paginaActual = 1;
   String _ultimaBusqueda = "";
+  bool _noHayMasResultados = false;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _ApiExplorerPageState extends State<ApiExplorerPage> {
       _librosApi.clear();
       _paginaActual = 1;
       _ultimaBusqueda = texto;
+      _noHayMasResultados = false;
     });
 
     try {
@@ -59,9 +61,8 @@ class _ApiExplorerPageState extends State<ApiExplorerPage> {
     }
   }
 
-  // Disparado por el Infinite Scroll para traer más páginas
   Future<void> _cargarSiguientePagina() async {
-    if (_cargandoMas || _cargandoInicial || _ultimaBusqueda.isEmpty) return;
+    if (_cargandoMas || _cargandoInicial || _ultimaBusqueda.isEmpty || _noHayMasResultados) return;
 
     setState(() => _cargandoMas = true);
     int proximaPagina = _paginaActual + 1;
@@ -73,11 +74,15 @@ class _ApiExplorerPageState extends State<ApiExplorerPage> {
         if (nuevosLibros.isNotEmpty) {
           _librosApi.addAll(nuevosLibros);
           _paginaActual = proximaPagina;
+        } else {
+          _noHayMasResultados = true;
+          _mostrarSnackBar('Has llegado al final de los resultados');
         }
         _cargandoMas = false;
       });
     } catch (e) {
       setState(() => _cargandoMas = false);
+      _mostrarSnackBar('Error al cargar más libros');
     }
   }
 

@@ -20,3 +20,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+assets:
+  - assets/images/Api.jpeg
+  - assets/images/collection.jpeg
+  - assets/images/Form.jpeg
+  - assets/images/stats.jpeg

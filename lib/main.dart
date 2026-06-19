@@ -24,16 +24,22 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Gestor Híbrido de Libros',
+      title: 'Libreria Digital',
       
-      // Configuración de Estilo Global (Material 3 con paleta verde/teal)
+      // Configuración de Estilo Global
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.teal,
+          seedColor: const Color(0xFF008080),
           brightness: Brightness.light,
+          primary: const Color(0xFF008080),
+          secondary: const Color(0xFF4DB6AC),
+          surface: const Color(0xFFF0FDFB),
         ),
-        // Estilo uniforme para los AppBars de toda la app
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: Color(0xFF004D40)),
+        titleLarge: TextStyle(color: Color(0xFF004D40)),
+        ),
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
