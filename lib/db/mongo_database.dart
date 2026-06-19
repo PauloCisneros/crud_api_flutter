@@ -9,7 +9,7 @@ class MongoDatabase {
 
   // Tu URL corregida con los parámetros correctos de unión (&)
   static const String connectionString =
-      'mongodb+srv://admin:12345@cluster0.lld70r4.mongodb.net/biblioteca?appName=Cluster0&tls=true&authSource=admin';
+      '';
 
   // 1. CONECTAR A MONGODB (Con verificación y protección de reconexión)
   static Future<void> connect() async {
