@@ -62,7 +62,7 @@ Para instalar y probar la aplicación directamente en un dispositivo Android:
 
 | Vista | Descripción |
 | :--- | :--- |
-| ![Colección](assets/images/coleccion.jpeg) | Visualización de la colección local guardada. |
+| ![Colección](assets/images/collection.jpeg) | Visualización de la colección local guardada. |
 | ![Buscador](assets/images/Api.jpeg) | Explorador API con Infinite Scroll. |
 | ![Formulario](assets/images/Form.jpeg) | Formulario de creación/edición de libros. |
 | ![Estadísticas](assets/images/stats.jpeg) | KPIs calculados en tiempo real. |
